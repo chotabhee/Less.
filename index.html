@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>less. | Ultra Premium OTT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="top-nav">
+        <div class="brand-logo">less<span>.</span></div>
+        <button class="liquid-btn" onclick="signInWithGoogle()" id="topLoginBtn"><i class="fa-solid fa-user"></i></button>
+    </div>
+
+    <div class="less-feed" id="mainFeed"></div>
+
+    <div class="floating-nav liquid-glass">
+        <div class="nav-item active" onclick="closeSidebars()"><i class="fa-solid fa-bolt"></i><span>Shorts</span></div>
+        <div class="nav-item" onclick="openMoviesList()"><i class="fa-solid fa-film"></i><span>Movies</span></div>
+        <div class="nav-item" onclick="toggleLeftMenu()"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+    </div>
+
+    <div id="leftSidebar" class="sidebar left-sidebar liquid-glass-sidebar">
+        <div class="sidebar-header">
+            <h3>Profile</h3>
+            <button onclick="closeSidebars()" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="auth-section">
+            <div id="loggedOutUI">
+                <i class="fa-solid fa-user-circle" style="font-size: 60px; color: #444; margin-bottom: 15px;"></i>
+                <button class="google-login-btn" onclick="signInWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+            </div>
+            <div id="loggedInUI" style="display: none;">
+                <img id="userGooglePic" src="" alt="User" class="google-profile-pic">
+                <h3 id="userGoogleName">User</h3>
+                <button class="google-logout-btn" onclick="signOut()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rightMoviesSidebar" class="sidebar right-sidebar liquid-glass-sidebar">
+        <div class="sidebar-header">
+            <button onclick="closeSidebars()" class="close-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="brand-logo" style="font-size: 20px;">less<span>.</span> Movies</div>
+        </div>
+        
+        <div class="search-container">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" id="movieSearch" class="search-input liquid-glass" placeholder="Search movies..." onkeyup="searchMovies()">
+        </div>
+        
+        <div class="category-tabs">
+            <button class="cat-tab liquid-glass active" onclick="filterCategory('all')">All</button>
+            <button class="cat-tab liquid-glass" onclick="filterCategory('action')">Action</button>
+            <button class="cat-tab liquid-glass" onclick="filterCategory('romance')">Romance</button>
+            <button class="cat-tab liquid-glass" onclick="filterCategory('horror')">Horror</button>
+        </div>
+        
+        <div class="video-grid" id="moviesCatalogueGrid"></div>
+    </div>
+
+    <div id="movieDetailsScreen" class="movie-details-screen" style="display: none;">
+        <div class="md-hero">
+            <img id="md-backdrop" src="" alt="Backdrop">
+            <div class="md-hero-fade"></div>
+            <button class="md-close-btn liquid-glass" onclick="closeMovieDetails()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="md-content">
+            <h1 id="md-title">Movie Title</h1>
+            <div class="md-meta">
+                <span>2024</span>
+                <span class="md-badge">U/A 16+</span>
+                <span>2h 15m</span>
+                <span id="md-genre" style="color: #ccc;">Action</span>
+            </div>
+            
+            <button class="md-play-btn" onclick="startPremiumMovie()"><i class="fa-solid fa-play"></i> Watch Now</button>
+            <p id="md-desc" class="md-desc">Description goes here.</p>
+            
+            <div class="md-actions">
+                <div class="md-action"><i class="fa-solid fa-plus"></i><span>Watchlist</span></div>
+                <div class="md-action" onclick="shareVideo()"><i class="fa-solid fa-share"></i><span>Share</span></div>
+                </div>
+            
+            <h3 style="margin-top: 30px;">More Like This</h3>
+            <div class="video-grid" id="moreLikeThisGrid"></div>
+        </div>
+    </div>
+
+    <div id="moviePlayerContainer" class="movie-player-overlay" style="display: none;">
+        <div class="movie-top-bar liquid-glass">
+            <button onclick="closeMoviePlayer()" class="movie-back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <span class="movie-logo">less<span>.</span></span>
+        </div>
+        <div class="movie-player-wrapper" id="movieWrapper"></div>
+    </div>
+
+    <div id="actorModal" class="actor-modal" style="display: none;">
+        <div class="actor-modal-content">
+            <button class="actor-close" onclick="closeActorModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="actor-header">
+                <img id="actorModalImg" src="" alt="Actor" class="actor-modal-img">
+                <div class="actor-info">
+                    <h2 id="actorModalName">Creator</h2>
+                    <p id="actorModalFollowers">0 Followers</p>
+                    <button class="follow-btn" onclick="toggleFollow()"><i class="fa-solid fa-plus"></i> Follow</button>
+                </div>
+            </div>
+            
+            <div class="profile-tabs">
+                <button class="profile-tab active" id="tab-shorts" onclick="renderActorVideos('shorts')">Shorts</button>
+                <button class="profile-tab" id="tab-movie" onclick="renderActorVideos('movie')">Movies</button>
+            </div>
+            
+            <div class="actor-videos">
+                <div class="actor-video-grid" id="actorVideoGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebarOverlay" onclick="closeSidebars()"></div>
+
+    <div id="adOverlay" class="ad-overlay" style="display: none;">
+        <div class="ad-content-box">
+            <span class="ad-label-big">ADVERTISEMENT</span>
+            <div class="ad-video-container">
+                <iframe id="midrollAdFrame" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <div class="ad-skip">
+                <span id="adSkipTimer">Skip in 5s</span>
+                <button id="adSkipBtn" class="skip-btn" onclick="skipAd()" style="display: none;">Skip Ad</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="security.js"></script>
+    <script src="auth.js"></script>
+    <script src="raw-data.js"></script> 
+    <script src="ai-manager.js"></script>
+    <script src="movie.js"></script>
+    <script src="engine.js"></script>
+</body>
+</html>
